@@ -1,9 +1,11 @@
 import React from "react";
 import "./App.css";
+// eslint-disable-next-line import/no-useless-path-segments
+import UserDetail from "../src/redux-toolkit-example/UserDetail.tsx"
 
 const App: React.FC = () => (
   <div className="App">
-    <h1 className="text-[blue]">React</h1>
+    <UserDetail />
   </div>
 );
 
