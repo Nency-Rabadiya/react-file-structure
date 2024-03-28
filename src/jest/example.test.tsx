@@ -1,14 +1,18 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent , configure } from "@testing-library/react";
 import TestExample from "./index.tsx";
+import SnapshotExample from "./SnapshotExample.tsx";
+import MultipleElement from "./MultipleElement.tsx";
 
-beforeAll(()=>{
-    console.log("before-all")
-})
+configure({ testIdAttribute: "element-id" });
 
-beforeEach(()=>{
-    console.log("before-each")
-})
+beforeAll(() => {
+  console.log("before-all");
+});
+
+beforeEach(() => {
+  console.log("before-each");
+});
 
 test("testing input", () => {
   render(<TestExample />);
@@ -38,10 +42,57 @@ describe("login test", () => {
     expect(input.value).toBe("a");
   });
 
-  test("onClick event test" , ()=>{
+  test("onClick event test", () => {
     render(<TestExample />);
     const submit = screen.getByRole("button");
     fireEvent.click(submit);
     expect(screen.getByText("successful")).toBeInTheDocument();
-  })
+  });
+});
+
+test("Snapshot example test", () => {
+  const container = render(<SnapshotExample />);
+  expect(container).toMatchSnapshot();
+});
+
+// Multiple element
+test("Multiple element test", () => {
+  render(<MultipleElement />);
+  const input1 = screen.getByRole("textbox", { name: "Lastname" });
+  expect(input1).toBeInTheDocument();
+  const input2 = screen.getByRole("textbox", { name: "Username" });
+  expect(input2).toBeInTheDocument();
+  const btn1 = screen.getByRole("button", { name: "Ok" });
+  expect(btn1).toBeInTheDocument();
+  const btn2 = screen.getByRole("button", { name: "Reset" });
+  expect(btn2).toBeInTheDocument();
+  const divSelect = screen.getByRole("loginDiv");
+  expect(divSelect).toBeInTheDocument();
+});
+
+test("getAllByRole test", () => {
+  render(<MultipleElement />);
+  const btn = screen.getAllByRole("button");
+  for (let i = 0; i < btn.length; i++) {
+    expect(btn[i]).toBeInTheDocument();
+  }
+});
+
+test("getByLabelText test",()=>{
+    render(<MultipleElement />);
+    const label = screen.getByLabelText("Username");
+    expect(label).toBeInTheDocument();
+    expect(label).toHaveValue("ABC");
+});
+
+test("override test-id test",()=>{
+  render(<MultipleElement />);
+  const testId = screen.getByTestId("password");
+  expect(testId).toBeInTheDocument();
+});
+
+test("getByDisplayValue",()=>{
+  render(<MultipleElement />)
+  const displayValue = screen.getByDisplayValue("nency");
+  expect(displayValue).toBeInTheDocument();
 });
