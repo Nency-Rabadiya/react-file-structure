@@ -1,8 +1,20 @@
+/* eslint-disable no-plusplus */
 import React from "react";
-import { render, screen, fireEvent , configure } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  configure,
+  within,
+  act,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import TestExample from "./index.tsx";
 import SnapshotExample from "./SnapshotExample.tsx";
 import MultipleElement from "./MultipleElement.tsx";
+import QueryBy from "./QueryBy.tsx";
+import FindBy from "./FindBy.tsx";
+import QueryWithinElement from "./QueryWithinElement.tsx";
 
 configure({ testIdAttribute: "element-id" });
 
@@ -78,21 +90,85 @@ test("getAllByRole test", () => {
   }
 });
 
-test("getByLabelText test",()=>{
-    render(<MultipleElement />);
-    const label = screen.getByLabelText("Username");
-    expect(label).toBeInTheDocument();
-    expect(label).toHaveValue("ABC");
+test("getByLabelText test", () => {
+  render(<MultipleElement />);
+  const label = screen.getByLabelText("Username");
+  expect(label).toBeInTheDocument();
+  expect(label).toHaveValue("ABC");
 });
 
-test("override test-id test",()=>{
+test("override test-id test", () => {
   render(<MultipleElement />);
   const testId = screen.getByTestId("password");
   expect(testId).toBeInTheDocument();
 });
 
-test("getByDisplayValue",()=>{
-  render(<MultipleElement />)
+test("getByDisplayValue", () => {
+  render(<MultipleElement />);
   const displayValue = screen.getByDisplayValue("nency");
   expect(displayValue).toBeInTheDocument();
+});
+
+test("String test", () => {
+  render(<MultipleElement />);
+  const string1 = screen.getByText("login page", { exact: false });
+  const string2 = screen.getByText("Login p", { exact: false });
+  expect(string1).toBeInTheDocument();
+  expect(string2).toBeInTheDocument();
+});
+
+test("Regex test", () => {
+  render(<MultipleElement />);
+  const string1 = screen.getByText(/login page/i);
+  const string2 = screen.getByText(/Login PA/i);
+  expect(string1).toBeInTheDocument();
+  expect(string2).toBeInTheDocument();
+});
+
+// queryBy
+test("queryBy test", () => {
+  render(<QueryBy name="" />);
+  // const btn = screen.getByText("Login");
+  // expect(btn).not.toBeInTheDocument();   // this will fail
+  const btn1 = screen.queryByText("Logout");
+  expect(btn1).toBeInTheDocument();
+  const btn2 = screen.queryByText("Login");
+  expect(btn2).not.toBeInTheDocument();
+});
+
+// findBy
+test("findBy test", async () => {
+  render(<FindBy />);
+  const data = await screen.findByText("Data found", {}, { timeout: 2000 });
+  expect(data).toBeInTheDocument();
+});
+
+// QueryWithinElement
+test("Query within element", () => {
+  render(<QueryWithinElement />);
+  const parent = screen.getByText("Parent");
+  expect(parent).toBeInTheDocument();
+  const child1 = within(parent).getByText("child1");
+  expect(child1).toBeInTheDocument();
+});
+
+// userEvent
+test("userEvent keyboard interaction test", async () => {
+  userEvent.setup();
+  render(<MultipleElement />);
+  const event = screen.getByPlaceholderText("Enter name");
+  await act(async () => {
+    await userEvent.type(event, "abcd");
+  });
+  expect(screen.getByText("abcd")).toBeInTheDocument();
+});
+
+test("props test", () => {
+  const name = "xyz";
+  const surname = "abcd";
+  render(<QueryBy name={name} surname={surname} />);
+  const prop1 = screen.getByText(name);
+  expect(prop1).toBeInTheDocument();
+  const prop2 = screen.getByText(surname);
+  expect(prop2).toBeInTheDocument();
 });
