@@ -15,6 +15,9 @@ import MultipleElement from "./MultipleElement.tsx";
 import QueryBy from "./QueryBy.tsx";
 import FindBy from "./FindBy.tsx";
 import QueryWithinElement from "./QueryWithinElement.tsx";
+import ProductProfile from "./ProductProfile.tsx";
+import { fetchProductData } from "./productApi.ts";
+import * as math from "./addMul.ts"
 
 configure({ testIdAttribute: "element-id" });
 
@@ -127,7 +130,7 @@ test("Regex test", () => {
 
 // queryBy
 test("queryBy test", () => {
-  render(<QueryBy name="" />);
+  render(<QueryBy name="" surname="" />);
   // const btn = screen.getByText("Login");
   // expect(btn).not.toBeInTheDocument();   // this will fail
   const btn1 = screen.queryByText("Logout");
@@ -171,4 +174,59 @@ test("props test", () => {
   expect(prop1).toBeInTheDocument();
   const prop2 = screen.getByText(surname);
   expect(prop2).toBeInTheDocument();
+});
+
+// mocking module and function
+
+jest.mock("./productApi", () => ({
+  fetchProductData: jest.fn(),
+}));
+
+const mockedFetchProductData = fetchProductData as jest.MockedFunction<
+  typeof fetchProductData
+>;
+
+test("mock test - displays product data", async () => {
+  const mockProductData = {
+    id: 1,
+    title: "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops",
+    description:
+      "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday",
+  };
+  mockedFetchProductData.mockResolvedValue(mockProductData);
+  render(<ProductProfile productId={1} />);
+
+  const title = await screen.findByText(
+    "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops"
+  );
+
+  const description = await screen.findByText(
+    "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday"
+  );
+
+  expect(title).toHaveTextContent(
+    "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops"
+  );
+
+  expect(description).toHaveTextContent(
+    "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday"
+  );
+});
+
+// spyOn 
+
+test("spyOn test", () => {
+  const addSpy = jest.spyOn(math, "add").mockImplementation(() => 5);
+  const multiplySpy = jest
+    .spyOn(math, "multiply")
+    .mockImplementation(() => 10);
+
+  const addition = math.add(3, 2);
+  expect(addition).toBe(5);
+
+  const multiplication = math.multiply(2, 5);
+  expect(multiplication).toBe(10);
+
+  expect(addSpy).toHaveBeenCalledWith(3, 2);
+  expect(multiplySpy).toHaveBeenCalledWith(2, 5);
 });
